@@ -66,7 +66,37 @@ def generate_ca_barcode(data):
 
 st.title("CA Driver's License Barcode Generator")
 
-col1, col2 = st.columns(2)
+tab1, tab2 = st.tabs(["Manual Entry", "AAMVA String"])
+
+with tab2:
+    st.subheader("Generate from AAMVA String")
+    aamva_string = st.text_area("Paste AAMVA String:", height=200)
+    
+    if st.button("Generate from AAMVA", type="primary"):
+        if aamva_string:
+            try:
+                codes = encode(aamva_string, columns=16, security_level=5)
+                img = render_image(codes, scale=2, ratio=3)
+                
+                img_buffer = io.BytesIO()
+                img.save(img_buffer, format='PNG')
+                img_buffer.seek(0)
+                
+                st.success("Barcode generated from AAMVA string!")
+                st.image(img_buffer, caption="AAMVA Barcode")
+                st.download_button(
+                    label="Download AAMVA Barcode",
+                    data=img_buffer,
+                    file_name="aamva_barcode.png",
+                    mime="image/png"
+                )
+            except Exception as e:
+                st.error(f"Error generating barcode: {str(e)}")
+        else:
+            st.warning("Please enter an AAMVA string")
+
+with tab1:
+    col1, col2 = st.columns(2)
 
 with col1:
     st.subheader("Personal Information")
